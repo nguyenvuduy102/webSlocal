@@ -30,7 +30,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 app.config["PAGE_SIZE"] = 12
 #mail
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
 
 
 app.config['MAIL_PORT'] = 587
@@ -43,7 +43,7 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # Mật khẩu ứ
 # app.config['MAIL_USERNAME'] = 'duyn26353@gmail.com'
 # app.config['MAIL_PASSWORD'] = 'hupmfolylgrqnwxk'
 
-app.config['MAIL_DEFAULT_SENDER'] = 'duyn26353@gmail.com'
+app.config['MAIL_DEFAULT_SENDER'] = 'MAIL_USERNAME'
 
 
 if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
