@@ -43,7 +43,7 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # Mật khẩu ứ
 # app.config['MAIL_USERNAME'] = 'duyn26353@gmail.com'
 # app.config['MAIL_PASSWORD'] = 'hupmfolylgrqnwxk'
 
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_DEFAULT_SENDER'] = 'duyn26353@gmail.com'
 
 if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
     print("❌ LỖI: Chưa tìm thấy MAIL_USERNAME hoặc MAIL_PASSWORD trong biến môi trường!")
