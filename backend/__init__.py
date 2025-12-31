@@ -33,9 +33,9 @@ app.config["PAGE_SIZE"] = 12
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 
 
-app.config['MAIL_PORT'] = 465                 # Đổi sang cổng 465
-app.config['MAIL_USE_TLS'] = False            # Tắt TLS
-app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') # Dùng biến môi trường cho bảo mật
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # Mật khẩu ứng dụng
@@ -44,6 +44,12 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # Mật khẩu ứ
 # app.config['MAIL_PASSWORD'] = 'hupmfolylgrqnwxk'
 
 app.config['MAIL_DEFAULT_SENDER'] = 'duyn26353@gmail.com'
+
+
+if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
+    print("❌ LỖI: Chưa tìm thấy MAIL_USERNAME hoặc MAIL_PASSWORD trong biến môi trường!")
+else:
+    print(f"✅ Cấu hình mail OK cho user: {app.config['MAIL_USERNAME']}")
 
 
 CORS(app, 
