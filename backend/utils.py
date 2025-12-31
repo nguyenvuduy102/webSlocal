@@ -303,21 +303,60 @@ def toggle_shop_favorite(user_id, shop_id):
         return 'added'
 
 # --- QUÊN MẬT KHẨU ---
+
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
 def generate_and_send_reset_code(user_id):
     user = get_user_by_id(user_id) 
     if not user: return False
+    
+    # Tạo mã
     code = str(random.randint(100000, 999999))
     user.reset_code = code
     user.code_expiration = datetime.now() + timedelta(minutes=15)
+    
     try:
         db.session.commit()
-        msg = Message("Mã xác nhận SLocal", recipients=[user.email])
-        msg.body = f"Mã xác nhận của bạn là: {code}"
-        mail.send(msg)
+        
+        # --- BẮT ĐẦU GỬI QUA BREVO API ---
+        api_key = os.environ.get('BREVO_API_KEY')
+        if not api_key:
+            print("Thiếu BREVO_API_KEY")
+            return False
+
+        # Cấu hình API
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = api_key
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+        # Nội dung mail
+        subject = "Mã xác nhận SLocal"
+        html_content = f"<html><body><h3>Mã xác nhận của bạn là: <b style='color:blue; font-size:24px;'>{code}</b></h3><p>Mã có hiệu lực trong 15 phút.</p></body></html>"
+        sender = {"name": "SLocal Support", "email": "duyn26353@gmail.com"} # Email đã Verify bên Brevo
+        to = [{"email": user.email, "name": user.name}]
+
+        # Tạo đối tượng gửi
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=to, 
+            sender=sender, 
+            subject=subject, 
+            html_content=html_content
+        )
+
+        # Gửi ngay lập tức
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        print("Gửi mail thành công. Message ID:", api_response.message_id)
+        
         return True
+
+    except ApiException as e:
+        db.session.rollback()
+        print("Lỗi Brevo API: %s\n" % e)
+        return False
     except Exception as ex:
         db.session.rollback()
-        print("Lỗi gửi mail:", ex)
+        print("Lỗi hệ thống:", ex)
         return False
 
 def verify_reset_code(user_id, code):
