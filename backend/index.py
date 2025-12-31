@@ -255,13 +255,40 @@ def api_toggle_favorite():
     return jsonify({'error': 'Lỗi'}), 400
 
 # API Reset Password
+
 @app.route('/api/forgot-password', methods=['POST'])
 def api_forgot_password():
-    email = request.form.get('email') or request.get_json().get('email')
-    user = utils.get_user_by_email(email)
-    if user and utils.generate_and_send_reset_code(user.id):
-        return jsonify({'message': 'Đã gửi mã', 'user_id': user.id, 'success': True})
-    return jsonify({'error': 'Lỗi hoặc không tìm thấy email', 'success': False}), 404
+    email = None
+    
+    # 1. Thử lấy từ Form (multipart/form-data)
+    if request.form:
+        email = request.form.get('email')
+    
+    # 2. Nếu không có, thử lấy từ JSON (application/json)
+    if not email:
+        # silent=True giúp không bao giờ bị crash nếu JSON lỗi
+        data = request.get_json(silent=True) 
+        if data:
+            email = data.get('email')
+
+    # 3. Kiểm tra kỹ: Nếu vẫn không có email thì báo lỗi Client (400) chứ không để sập Server (500)
+    if not email:
+        return jsonify({'error': 'Vui lòng nhập email!', 'success': False}), 400
+
+    # 4. Gọi hàm xử lý (đã có try/except bên trong utils)
+    try:
+        user = utils.get_user_by_email(email)
+        if user:
+            if utils.generate_and_send_reset_code(user.id):
+                return jsonify({'message': 'Đã gửi mã xác nhận', 'user_id': user.id, 'success': True})
+            else:
+                return jsonify({'error': 'Lỗi gửi email (Kiểm tra cấu hình Mail)', 'success': False}), 500
+        else:
+            return jsonify({'error': 'Email không tồn tại trong hệ thống', 'success': False}), 404
+            
+    except Exception as e:
+        print("CRITICAL ERROR:", e) # In lỗi ra log Render để xem
+        return jsonify({'error': 'Lỗi nội bộ server', 'success': False}), 500
 
 @app.route('/api/verify-code', methods=['POST'])
 def api_verify_code():
