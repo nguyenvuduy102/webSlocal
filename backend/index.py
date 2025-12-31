@@ -54,9 +54,24 @@ def api_shop_detail(shop_id):
     if not shop: return jsonify({'error': 'Không tìm thấy cửa hàng'}), 404
     comments = utils.get_comments(shop_id)
     
+    # --- XỬ LÝ DANH SÁCH SẢN PHẨM TỪ DB ---
+    products = []
+    if shop.items:
+        # Tách chuỗi "Món A, Món B" thành list ["Món A", "Món B"]
+        raw_items = [i.strip() for i in shop.items.split(',') if i.strip()]
+        
+        for idx, item_name in enumerate(raw_items):
+            products.append({
+                'id': idx + 1,         
+                'name': item_name,     
+                'price': shop.price,   
+                'image': ''            
+            })
+            
     return jsonify({
         'shop': shop.to_dict(),
-        'comments': [c.to_dict() for c in comments] 
+        'comments': [c.to_dict() for c in comments],
+        'products': products 
     })
 
 # --- 2. API AUTH ---
